@@ -1045,7 +1045,7 @@ local function OneSpawnPerMap(cands, pm, px, py)
   return out
 end
 
--- Every world-map pin to draw, as { s=, d=, icon=, rare= }, by opts.pinMode:
+-- Every world-map pin to draw, as { s=, d=, icon=, rare= }, by mode (opts.mapPinMode / opts.minimapPinMode):
 --   all      every spawn point (thinned to MAX_PER_TEACHER per beast)
 --   nearest  one pin per beast per map
 --   ability  one pin per ability per map (the closest beast that teaches it)
@@ -1102,13 +1102,15 @@ function Geo.UpdatePins()
   if not ns.db or not Libs() or not ns.Active() then return end
   ClearPins()
   local o = ns.db.opts
-  if o.pinsOff or not (o.mapPins or o.minimapPins) then return end
+  local mapMode, miniMode = o.mapPinMode or "ability", o.minimapPinMode or "ability"
+  if o.pinsOff or (mapMode == "none" and miniMode == "none") then return end
 
   local pm, px, py = PlayerPos()
   local size, alpha = o.pinSize or 4, o.pinAlpha or 1
-  local chosen = ChoosePins(TeachersToPin(), o.pinMode or "nearest", pm, px, py)
+  local teachers = TeachersToPin()
 
-  if o.mapPins then
+  if mapMode ~= "none" then
+    local chosen = ChoosePins(teachers, mapMode, pm, px, py)
     for i = 1, math.min(MAX_WORLD, #chosen) do
       local c = chosen[i]
       local p = NewPin(worldPool)
@@ -1120,8 +1122,9 @@ function Geo.UpdatePins()
     Geo.ApplyPinZoom()
   end
 
-  -- Minimap: the same chosen pins, those on your map, nearest first
-  if o.minimapPins and pm then
+  -- Minimap: its own selection, those on your map, nearest first
+  if miniMode ~= "none" and pm then
+    local chosen = ChoosePins(teachers, miniMode, pm, px, py)
     local nearby = {}
     for _, c in ipairs(chosen) do
       if c.s.map == pm then
@@ -1154,10 +1157,10 @@ function Geo.QueuePins(force)
     return
   end
   local o = ns.db.opts
-  local sig = table.concat({ ns.learnedSerial or 0, ns.PlayerLevel(), ns.CurrentZone(), tostring(o.mapPins),
-    tostring(o.minimapPins), tostring(o.huntPetOnly), tostring(o.huntDungeons), tostring(Geo.ready), ns.PetFamily() or "",
+  local sig = table.concat({ ns.learnedSerial or 0, ns.PlayerLevel(), ns.CurrentZone(), tostring(o.mapPinMode),
+    tostring(o.minimapPinMode), tostring(o.huntPetOnly), tostring(o.huntDungeons), tostring(Geo.ready), ns.PetFamily() or "",
     tostring(o.pinsOff), tostring(o.rarePins), tostring(ns.tamedSerial or 0), tostring(ns.seenSerial or 0),
-    tostring(o.pinSize), tostring(o.pinAlpha), tostring(o.pinMode), tostring(o.pinZoomGrow) }, "|")
+    tostring(o.pinSize), tostring(o.pinAlpha), tostring(o.pinZoomGrow) }, "|")
   if sig == lastSig and not force then return end
   lastSig = sig
   if queued then return end

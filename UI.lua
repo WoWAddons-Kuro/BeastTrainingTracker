@@ -1474,9 +1474,45 @@ do
   y = y - 8
 
   Section("Map pins")
-  Check(p, "Show teachers on the world map", "mapPins", 4, y, "Pins for every beast that teaches a missing rank you can tame now. Click a pin for a waypoint.")
-  Check(p, "Show teachers on the minimap", "minimapPins", 300, y, "Pins on the minimap for the nearest teachers in your zone.")
-  y = y - 24
+  -- What to pin on each map: click to cycle through the modes
+  local PIN_MODES = {
+    { key = "none", text = "None", tip = "No pins on this map." },
+    { key = "ability", text = "One per ability", tip = "One pin per missing ability: the closest beast that teaches it. The fewest pins." },
+    { key = "nearest", text = "Nearest spawn only", tip = "One pin per beast: the spawn point closest to you (closest to the middle of its range on other maps)." },
+    { key = "all", text = "All spawns", tip = "Every known spawn point of every beast you need. Can be a lot of pins." },
+  }
+  local function PinModeButton(label, key, x, w)
+    local b = Button(p, "", w, nil)
+    b:SetPoint("TOPLEFT", x, y)
+    local function Index()
+      local cur = ns.db and ns.db.opts[key]
+      for i, m in ipairs(PIN_MODES) do if m.key == cur then return i end end
+      return 2
+    end
+    function b.Refresh() b:SetText(label .. ": " .. PIN_MODES[Index()].text) end
+    b:SetScript("OnClick", function()
+      ns.db.opts[key] = PIN_MODES[Index() % #PIN_MODES + 1].key
+      b.Refresh()
+      Geo.QueuePins(true)
+      if GameTooltip:IsOwned(b) then b:GetScript("OnEnter")(b) end
+    end)
+    b:SetScript("OnEnter", function(self)
+      GameTooltip:SetOwner(self, "ANCHOR_TOP")
+      GameTooltip:AddLine(label, 1, 0.82, 0)
+      local cur = ns.db and ns.db.opts[key]
+      for _, m in ipairs(PIN_MODES) do
+        GameTooltip:AddLine((m.key == cur and "|cff40ff40> " or "|cffffffff  ") .. m.text .. "|r - " .. m.tip, 1, 1, 1, true)
+      end
+      GameTooltip:AddLine(" ")
+      GameTooltip:AddLine("Click to switch", 0.5, 0.5, 0.5)
+      GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", GameTooltip_Hide)
+    return b
+  end
+  local mapPinMode = PinModeButton("World map pins", "mapPinMode", 4, 280)
+  local miniPinMode = PinModeButton("Minimap pins", "minimapPinMode", 300, 280)
+  y = y - 26
   Check(p, "Hide ALL beast pins", "pinsOff", 4, y, "Master switch for every pin this addon draws. Same as right-clicking the minimap button.",
     function() Geo.QueuePins(true) end)
   Check(p, "Show untamed special pets on the map", "rarePins", 300, y, "Pins for untamed rares (and outdoor elites / quest spawns) you can tame, even if they teach nothing you need.")
@@ -1603,39 +1639,6 @@ do
   end)
   pinZoom:SetScript("OnLeave", GameTooltip_Hide)
   pinZoom:HookScript("OnValueChanged", function() if ns.Geo.ApplyPinZoom then ns.Geo.ApplyPinZoom() end end)
-
-  -- Pins per beast: click to cycle
-  local PIN_MODES = {
-    { key = "nearest", text = "Nearest spawn only", tip = "One pin per beast: the spawn point closest to you (closest to the middle of its range on other maps)." },
-    { key = "ability", text = "One per ability", tip = "One pin per missing ability: the closest beast that teaches it. The fewest pins." },
-    { key = "all", text = "All spawns", tip = "Every known spawn point of every beast you need. Can be a lot of pins." },
-  }
-  local pinMode = Button(p, "", 160, nil)
-  pinMode:SetPoint("TOPRIGHT", -8, y - 8) -- right-aligned, same column as the route "Default" button
-  local function PinModeIndex()
-    for i, m in ipairs(PIN_MODES) do if m.key == (ns.db and ns.db.opts.pinMode) then return i end end
-    return 1
-  end
-  local function ShowPinMode()
-    pinMode:SetText("Pins: " .. PIN_MODES[PinModeIndex()].text)
-  end
-  pinMode:SetScript("OnClick", function()
-    local m = PIN_MODES[PinModeIndex() % #PIN_MODES + 1]
-    ns.db.opts.pinMode = m.key
-    ShowPinMode()
-    Geo.QueuePins(true)
-  end)
-  pinMode:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_TOP")
-    GameTooltip:AddLine("Pins per beast", 1, 0.82, 0)
-    for _, m in ipairs(PIN_MODES) do
-      GameTooltip:AddLine((m.key == ns.db.opts.pinMode and "|cff40ff40> " or "|cffffffff  ") .. m.text .. "|r - " .. m.tip, 1, 1, 1, true)
-    end
-    GameTooltip:AddLine(" ")
-    GameTooltip:AddLine("Click to switch", 0.5, 0.5, 0.5)
-    GameTooltip:Show()
-  end)
-  pinMode:SetScript("OnLeave", GameTooltip_Hide)
   y = y - 40
 
   Section("Alerts")
@@ -1692,7 +1695,7 @@ do
     pinSize:SetValue(ns.db.opts.pinSize or 4)
     pinAlpha:SetValue(ns.db.opts.pinAlpha or 1)
     pinZoom:SetValue(ns.db.opts.pinZoomGrow or 1)
-    ShowPinMode()
+    mapPinMode.Refresh(); miniPinMode.Refresh()
     versionText:SetText("BeastTrainingTracker.Kuro  |cffffffff" .. ns.VersionText() .. "|r")
     for i, a in ipairs(Geo.AddonStatus()) do
       local r = addonRows[i]

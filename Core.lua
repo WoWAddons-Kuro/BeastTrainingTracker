@@ -728,11 +728,13 @@ local DEFAULTS = {
   huntPetOnly = false, huntDungeons = false, huntSortCount = false, huntBothFactions = false,
   hideQuestieWarning = false, huntHereFirst = true,
   -- map & alerts
-  mapPins = true, minimapPins = true, pinsOff = false, learnToast = true, routeOpenMap = true, routeLines = true,
-  -- pin look: size in px, alpha 0.2-1, how many pins per beast on the map
-  -- ("all" = every spawn, "nearest" = one per beast, "ability" = one per ability)
+  pinsOff = false, learnToast = true, routeOpenMap = true, routeLines = true,
+  -- what to pin, per map: "none", "ability" (one per missing ability),
+  -- "nearest" (one per beast), "all" (every spawn point)
+  mapPinMode = "ability", minimapPinMode = "ability",
+  -- pin look: size in px, alpha 0.2-1
   -- pinZoomGrow: world-map pins grow to this multiple at full zoom-in (1 = fixed size)
-  pinSize = 4, pinAlpha = 1, pinMode = "ability", pinZoomGrow = 2,
+  pinSize = 4, pinAlpha = 1, pinZoomGrow = 2,
   -- rare pets
   rareHideTamed = false, rareHideHigh = false, rarePins = true, rareSortSpeed = false,
   spShowRare = true, spShowElite = true, spShowSpawned = true, spShowDungeon = false,
@@ -760,6 +762,16 @@ local function InitDB()
   db.opts = db.opts or {}
   for k, v in pairs(DEFAULTS) do
     if db.opts[k] == nil then db.opts[k] = v end
+  end
+
+  -- one-time migration: the old "show on world map / minimap" checkboxes and
+  -- the shared pinMode became two per-map enums (mapPinMode / minimapPinMode)
+  local o = db.opts
+  if o.mapPins ~= nil or o.minimapPins ~= nil or o.pinMode ~= nil then
+    local mode = o.pinMode or "ability"
+    if o.mapPins ~= nil then o.mapPinMode = o.mapPins and mode or "none" end
+    if o.minimapPins ~= nil then o.minimapPinMode = o.minimapPins and mode or "none" end
+    o.mapPins, o.minimapPins, o.pinMode = nil, nil, nil
   end
 
   -- merge the account-wide backup back in, then keep it in sync
