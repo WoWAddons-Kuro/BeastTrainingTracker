@@ -1,6 +1,6 @@
 local ADDON, ns = ...
 
-ns.TAG = "|cffabd473Beast Training Tracker:|r "
+ns.TAG = "|cffabd473BeastTrainingTracker.Kuro:|r "
 function ns.Say(msg) print(ns.TAG .. msg) end
 local Say = ns.Say
 
@@ -654,7 +654,7 @@ end
 function ns.Import(text)
   text = (text or ""):gsub("[\r\n\t]", ""):match("^%s*(.-)%s*$")
   local body = text:match("^BTT1:(.*)$")
-  if not body then return nil, "That doesn't look like a Beast Training Tracker export (it should start with BTT1:)." end
+  if not body then return nil, "That doesn't look like a BeastTrainingTracker.Kuro export (it should start with BTT1:)." end
   local added, skipped, tamedAdded = 0, 0, 0
 
   -- "#T:" section: tamed special pets (merged, never removes)

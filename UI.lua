@@ -27,7 +27,7 @@ tinsert(UISpecialFrames, "BeastTrainingTrackerKuroFrame")
 
 local title = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 title:SetPoint("TOP", 0, -6)
-title:SetText("|cffabd473Beast Training Tracker|r")
+title:SetText("|cffabd473BeastTrainingTracker.Kuro|r")
 
 local bigIcon = f:CreateTexture(nil, "ARTWORK")
 bigIcon:SetSize(40, 40)
@@ -73,7 +73,7 @@ addonStrip.text:SetPoint("LEFT")
 addonStrip:SetScript("OnEnter", function(self)
   GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT")
   GameTooltip:AddLine("Optional addons", 1, 0.82, 0)
-  GameTooltip:AddLine("Beast Training Tracker works on its own. These add extras:", 0.8, 0.8, 0.8, true)
+  GameTooltip:AddLine("BeastTrainingTracker.Kuro works on its own. These add extras:", 0.8, 0.8, 0.8, true)
   GameTooltip:AddLine(" ")
   for _, a in ipairs(ns.Geo.AddonStatus()) do
     GameTooltip:AddLine((a.on and "|cff40ff40" or "|cff9d9d9d") .. a.name .. "|r", 1, 1, 1)
@@ -1440,7 +1440,7 @@ do
   end
 
   -- Optional addons: green = detected, grey = not installed
-  Section("Optional addons  |cff9d9d9d- Beast Training Tracker works on its own; these add extras|r")
+  Section("Optional addons  |cff9d9d9d- BeastTrainingTracker.Kuro works on its own; these add extras|r")
   local addonRows = {}
   for i = 1, 3 do
     local r = {}
@@ -1557,7 +1557,7 @@ do
   y = y - 24
   Check(p, "Pet level-up nudges", "levelNudge", 4, y, "Chat message when your pet reaches the level for a new rank.")
   Check(p, "Let RareScanner alert for rares", "rsHandlesRares", 300, y,
-    "If RareScanner is installed it already alerts for rares on its list. With this on, Beast Training Tracker skips its own alert for those so you don't get two.")
+    "If RareScanner is installed it already alerts for rares on its list. With this on, BeastTrainingTracker.Kuro skips its own alert for those so you don't get two.")
   y = y - 24
   Check(p, "Popup when I learn a new ability", "learnToast", 4, y,
     "On-screen popup (with sound) whenever a new pet ability rank is learned - e.g. from a beast you just tamed.")
@@ -1605,7 +1605,7 @@ do
     if not p:IsShown() then return end
     mmCheck:SetChecked(not ns.db.minimap.hide)
     ShowRouteColor()
-    versionText:SetText("Beast Training Tracker  |cffffffff" .. ns.VersionText() .. "|r")
+    versionText:SetText("BeastTrainingTracker.Kuro  |cffffffff" .. ns.VersionText() .. "|r")
     for i, a in ipairs(Geo.AddonStatus()) do
       local r = addonRows[i]
       r.dot:SetTexture(a.on and "Interface\\COMMON\\Indicator-Green" or "Interface\\COMMON\\Indicator-Gray")
@@ -1622,7 +1622,7 @@ end
 -- Shown after login when Questie isn't installed: without it, beast
 -- locations are limited to what you've spotted yourself.
 StaticPopupDialogs["BTTK_NO_QUESTIE"] = {
-  text = "Beast Training Tracker\n\nQuestie isn't installed, so most beast locations are unknown.\n\n"
+  text = "BeastTrainingTracker.Kuro\n\nQuestie isn't installed, so most beast locations are unknown.\n\n"
     .. "Map pins, waypoints and hunt routes will only include beasts you've spotted yourself "
     .. "(targeted, moused over or seen a nameplate). Install Questie to see every beast's spawn points.",
   button1 = OKAY or "OK",
@@ -1648,7 +1648,7 @@ ns.OnLogin(function()
 end)
 
 StaticPopupDialogs["BTTK_RESET_DATA"] = {
-  text = "Beast Training Tracker\n\nWipe ALL saved learned ranks for this character?\nOpen Beast Training afterwards to resync.",
+  text = "BeastTrainingTracker.Kuro\n\nWipe ALL saved learned ranks for this character?\nOpen Beast Training afterwards to resync.",
   button1 = YES or "Yes",
   button2 = NO or "No",
   OnAccept = function() ns.ResetData() end,
@@ -1769,7 +1769,7 @@ if LDB then
     end,
     OnTooltipShow = function(tt)
       if not ns.db then return end
-      tt:AddLine("|cffabd473Beast Training Tracker|r")
+      tt:AddLine("|cffabd473BeastTrainingTracker.Kuro|r")
       if not ns.Active() then
         tt:AddLine("|cffff6060Disabled on this character|r (not a Hunter)", 1, 1, 1)
         tt:AddLine("|cffffffffLeft-click|r open Settings to change that", 0.6, 0.6, 0.6)

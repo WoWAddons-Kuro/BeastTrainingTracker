@@ -683,7 +683,7 @@ local function ShowRoute()
   if Geo.HasTomTom() then
     for _, s in ipairs(Geo.route) do
       local ok, uid = pcall(TomTom.AddWaypoint, TomTom, s.map, s.x, s.y, {
-        title = s.label, persistent = false, minimap = true, world = true, from = "Beast Training Tracker",
+        title = s.label, persistent = false, minimap = true, world = true, from = "BeastTrainingTracker.Kuro",
       })
       if ok and uid then Geo.uids[#Geo.uids + 1] = uid end
     end
