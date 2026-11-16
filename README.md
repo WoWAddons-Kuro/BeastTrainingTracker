@@ -63,6 +63,17 @@ bar, no Questie lookups. Only two things stay:
 Untick the box and everything starts up on the spot; tick it again and pins,
 routes, tracker and XP bar are taken down immediately.
 
+## Map pins
+
+Settings → Map pins has three controls for how busy the map gets:
+
+- **Pin size** (8–24 px) and **Pin opacity** (20–100 %).
+- **Pins per beast** - *Nearest spawn only* (default: one pin per beast, at the
+  spawn closest to you, or the middle of its range on other maps), *One per
+  ability* (one pin per missing ability, the closest beast that teaches it), or
+  *All spawns* (every known spawn point, as the original addon draws them).
+  The minimap shows the same selection, nearest first.
+
 ## Tabs
 
 | Tab | What it shows |

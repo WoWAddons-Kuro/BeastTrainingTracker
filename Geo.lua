@@ -989,6 +989,92 @@ local function TeachersToPin()
   return out
 end
 
+-- Squared distance between two points on the same map
+local function Dist2(ax, ay, bx, by) return (ax - bx) ^ 2 + (ay - by) ^ 2 end
+
+-- Per map, the one spawn to pin for a group of candidates { s=, d=, icon=, rare= }:
+-- closest to you on the map you're standing on, closest to the group's
+-- centre everywhere else (so "nearest" means something on other maps too).
+local function OneSpawnPerMap(cands, pm, px, py)
+  local byMap = {}
+  for _, c in ipairs(cands) do
+    local list = byMap[c.s.map]
+    if not list then list = {}; byMap[c.s.map] = list end
+    list[#list + 1] = c
+  end
+  local out = {}
+  for map, list in pairs(byMap) do
+    local cx, cy
+    if map == pm and px then
+      cx, cy = px, py
+    else
+      cx, cy = 0, 0
+      for _, c in ipairs(list) do cx, cy = cx + c.s.x, cy + c.s.y end
+      cx, cy = cx / #list, cy / #list
+    end
+    local best, bd
+    for _, c in ipairs(list) do
+      local d = Dist2(c.s.x, c.s.y, cx, cy)
+      if not bd or d < bd then best, bd = c, d end
+    end
+    out[#out + 1] = best
+  end
+  return out
+end
+
+-- Every world-map pin to draw, as { s=, d=, icon=, rare= }, by opts.pinMode:
+--   all      every spawn point (thinned to MAX_PER_TEACHER per beast)
+--   nearest  one pin per beast per map
+--   ability  one pin per ability per map (the closest beast that teaches it)
+local function ChoosePins(teachers, mode, pm, px, py)
+  local out = {}
+  local groups = {} -- key -> { cands = {} }
+  local function Group(key)
+    local g = groups[key]
+    if not g then g = { cands = {} }; groups[key] = g end
+    return g
+  end
+
+  for name, d in pairs(teachers) do
+    local info = Geo.Lookup(name)
+    if info and #info.spawns > 0 then
+      local rare = Geo.IsRare(name)
+      local icon = d.teaches[1] and d.teaches[1].ab.icon
+        or (ns.RS and ns.RS.Info(name) and ns.RS.Info(name).icon) or "Interface\\Icons\\Ability_Hunter_BeastTaming"
+      if mode == "all" then
+        local step = math.max(1, math.floor(#info.spawns / MAX_PER_TEACHER))
+        for i = 1, #info.spawns, step do
+          out[#out + 1] = { s = info.spawns[i], d = d, icon = icon, rare = rare }
+        end
+      elseif mode == "ability" and #d.teaches > 0 then
+        -- the same beast is a candidate for every ability it teaches
+        for _, e in ipairs(d.teaches) do
+          local g = Group(e.ab.name)
+          for _, s in ipairs(info.spawns) do g.cands[#g.cands + 1] = { s = s, d = d, icon = e.ab.icon, rare = rare } end
+        end
+      else
+        -- "nearest", or a special pet that teaches nothing: one group per beast
+        local g = Group(name)
+        for _, s in ipairs(info.spawns) do g.cands[#g.cands + 1] = { s = s, d = d, icon = icon, rare = rare } end
+      end
+    end
+  end
+
+  if mode ~= "all" then
+    local seen = {} -- same beast at the same spot picked by two abilities: pin it once
+    for _, g in pairs(groups) do
+      for _, c in ipairs(OneSpawnPerMap(g.cands, pm, px, py)) do
+        local k = c.d.t.name .. "|" .. tostring(c.s.map) .. "|" .. c.s.x .. "|" .. c.s.y
+        if not seen[k] then
+          seen[k] = true
+          out[#out + 1] = c
+        end
+      end
+    end
+  end
+  return out
+end
+
 function Geo.UpdatePins()
   if not ns.db or not Libs() or not ns.Active() then return end
   ClearPins()
@@ -996,44 +1082,39 @@ function Geo.UpdatePins()
   if o.pinsOff or not (o.mapPins or o.minimapPins) then return end
 
   local pm, px, py = PlayerPos()
-  local nearby = {}
-  local worldCount = 0
-  for name, d in pairs(TeachersToPin()) do
-    local info = Geo.Lookup(name)
-    if info and #info.spawns > 0 then
-      local rare = Geo.IsRare(name)
-      local icon = d.teaches[1] and d.teaches[1].ab.icon
-        or (ns.RS and ns.RS.Info(name) and ns.RS.Info(name).icon) or "Interface\\Icons\\Ability_Hunter_BeastTaming"
-      if o.mapPins and worldCount < MAX_WORLD then
-        local step = math.max(1, math.floor(#info.spawns / MAX_PER_TEACHER))
-        for i = 1, #info.spawns, step do
-          local s = info.spawns[i]
-          local p = NewPin(worldPool)
-          StylePin(p, d, s, icon, rare, rare and 16 or 12)
-          HBDPins:AddWorldMapIconMap(REF, p, s.map, s.x, s.y, 0)
-          worldUsed[#worldUsed + 1] = p
-          worldCount = worldCount + 1
-          if worldCount >= MAX_WORLD then break end
-        end
-      end
-      if o.minimapPins and pm then
-        for _, s in ipairs(info.spawns) do
-          if s.map == pm then
-            nearby[#nearby + 1] = { s = s, d = d, icon = icon, rare = rare,
-              dist = px and ((s.x - px) ^ 2 + (s.y - py) ^ 2) or 0 }
-          end
-        end
-      end
+  local size, alpha = o.pinSize or 12, o.pinAlpha or 1
+  local chosen = ChoosePins(TeachersToPin(), o.pinMode or "nearest", pm, px, py)
+
+  if o.mapPins then
+    for i = 1, math.min(MAX_WORLD, #chosen) do
+      local c = chosen[i]
+      local p = NewPin(worldPool)
+      StylePin(p, c.d, c.s, c.icon, c.rare, c.rare and math.floor(size * 1.33 + 0.5) or size)
+      p:SetAlpha(alpha)
+      HBDPins:AddWorldMapIconMap(REF, p, c.s.map, c.s.x, c.s.y, 0)
+      worldUsed[#worldUsed + 1] = p
     end
   end
 
-  table.sort(nearby, function(a, b) return a.dist < b.dist end)
-  for i = 1, math.min(MAX_MINI, #nearby) do
-    local n = nearby[i]
-    local p = NewPin(miniPool)
-    StylePin(p, n.d, n.s, n.icon, n.rare, n.rare and 14 or 10)
-    HBDPins:AddMinimapIconMap(REF, p, n.s.map, n.s.x, n.s.y, false, false)
-    miniUsed[#miniUsed + 1] = p
+  -- Minimap: the same chosen pins, those on your map, nearest first
+  if o.minimapPins and pm then
+    local nearby = {}
+    for _, c in ipairs(chosen) do
+      if c.s.map == pm then
+        c.dist = px and Dist2(c.s.x, c.s.y, px, py) or 0
+        nearby[#nearby + 1] = c
+      end
+    end
+    table.sort(nearby, function(a, b) return a.dist < b.dist end)
+    local msize = math.max(6, math.floor(size * 0.85 + 0.5))
+    for i = 1, math.min(MAX_MINI, #nearby) do
+      local c = nearby[i]
+      local p = NewPin(miniPool)
+      StylePin(p, c.d, c.s, c.icon, c.rare, c.rare and math.floor(msize * 1.33 + 0.5) or msize)
+      p:SetAlpha(alpha)
+      HBDPins:AddMinimapIconMap(REF, p, c.s.map, c.s.x, c.s.y, false, false)
+      miniUsed[#miniUsed + 1] = p
+    end
   end
 end
 
@@ -1051,7 +1132,8 @@ function Geo.QueuePins(force)
   local o = ns.db.opts
   local sig = table.concat({ ns.learnedSerial or 0, ns.PlayerLevel(), ns.CurrentZone(), tostring(o.mapPins),
     tostring(o.minimapPins), tostring(o.huntPetOnly), tostring(o.huntDungeons), tostring(Geo.ready), ns.PetFamily() or "",
-    tostring(o.pinsOff), tostring(o.rarePins), tostring(ns.tamedSerial or 0), tostring(ns.seenSerial or 0) }, "|")
+    tostring(o.pinsOff), tostring(o.rarePins), tostring(ns.tamedSerial or 0), tostring(ns.seenSerial or 0),
+    tostring(o.pinSize), tostring(o.pinAlpha), tostring(o.pinMode) }, "|")
   if sig == lastSig and not force then return end
   lastSig = sig
   if queued then return end

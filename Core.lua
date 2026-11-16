@@ -729,6 +729,9 @@ local DEFAULTS = {
   hideQuestieWarning = false, huntHereFirst = true,
   -- map & alerts
   mapPins = true, minimapPins = true, pinsOff = false, learnToast = true, routeOpenMap = true, routeLines = true,
+  -- pin look: size in px, alpha 0.2-1, how many pins per beast on the map
+  -- ("all" = every spawn, "nearest" = one per beast, "ability" = one per ability)
+  pinSize = 12, pinAlpha = 1, pinMode = "nearest",
   -- rare pets
   rareHideTamed = false, rareHideHigh = false, rarePins = true, rareSortSpeed = false,
   spShowRare = true, spShowElite = true, spShowSpawned = true, spShowDungeon = false,

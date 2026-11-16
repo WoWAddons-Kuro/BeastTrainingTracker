@@ -1565,6 +1565,68 @@ do
   end
   y = y - 40
 
+  -- Pin look: size, opacity, how many pins per beast
+  local function PinSlider(name, label, lo, hi, step, x, key, fmt)
+    local s = CreateFrame("Slider", name, p, "OptionsSliderTemplate")
+    s:SetWidth(150)
+    s:SetPoint("TOPLEFT", x, y - 10)
+    s:SetMinMaxValues(lo, hi)
+    s:SetValueStep(step)
+    if s.SetObeyStepOnDrag then s:SetObeyStepOnDrag(true) end
+    local lowT = s.Low or _G[name .. "Low"]
+    local highT = s.High or _G[name .. "High"]
+    s.label = s.Text or _G[name .. "Text"]
+    if lowT then lowT:SetText(fmt(lo)) end
+    if highT then highT:SetText(fmt(hi)) end
+    s:SetScript("OnValueChanged", function(self, v)
+      v = math.floor(v / step + 0.5) * step
+      if s.label then s.label:SetText(label .. ": " .. fmt(v)) end
+      if ns.db and ns.db.opts[key] ~= v then
+        ns.db.opts[key] = v
+        Geo.QueuePins(true)
+      end
+    end)
+    return s
+  end
+  local pinSize = PinSlider("BeastTrainingTrackerKuroPinSize", "Pin size", 8, 24, 1, 20, "pinSize",
+    function(v) return ("%d px"):format(v) end)
+  local pinAlpha = PinSlider("BeastTrainingTrackerKuroPinAlpha", "Pin opacity", 0.2, 1, 0.05, 220, "pinAlpha",
+    function(v) return ("%d%%"):format(v * 100 + 0.5) end)
+
+  -- Pins per beast: click to cycle
+  local PIN_MODES = {
+    { key = "nearest", text = "Nearest spawn only", tip = "One pin per beast: the spawn point closest to you (closest to the middle of its range on other maps)." },
+    { key = "ability", text = "One per ability", tip = "One pin per missing ability: the closest beast that teaches it. The fewest pins." },
+    { key = "all", text = "All spawns", tip = "Every known spawn point of every beast you need. Can be a lot of pins." },
+  }
+  local pinMode = Button(p, "", 230, nil)
+  pinMode:SetPoint("TOPLEFT", 420, y - 8)
+  local function PinModeIndex()
+    for i, m in ipairs(PIN_MODES) do if m.key == (ns.db and ns.db.opts.pinMode) then return i end end
+    return 1
+  end
+  local function ShowPinMode()
+    pinMode:SetText("Pins per beast: " .. PIN_MODES[PinModeIndex()].text)
+  end
+  pinMode:SetScript("OnClick", function()
+    local m = PIN_MODES[PinModeIndex() % #PIN_MODES + 1]
+    ns.db.opts.pinMode = m.key
+    ShowPinMode()
+    Geo.QueuePins(true)
+  end)
+  pinMode:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:AddLine("Pins per beast", 1, 0.82, 0)
+    for _, m in ipairs(PIN_MODES) do
+      GameTooltip:AddLine((m.key == ns.db.opts.pinMode and "|cff40ff40> " or "|cffffffff  ") .. m.text .. "|r - " .. m.tip, 1, 1, 1, true)
+    end
+    GameTooltip:AddLine(" ")
+    GameTooltip:AddLine("Click to switch", 0.5, 0.5, 0.5)
+    GameTooltip:Show()
+  end)
+  pinMode:SetScript("OnLeave", GameTooltip_Hide)
+  y = y - 40
+
   Section("Alerts")
   Check(p, "Alert when I target or mouse over a teacher", "alertTarget", 4, y, "Big on-screen message when a beast you can tame teaches something you need.")
   Check(p, "Alert when a teacher's nameplate appears", "alertNameplate", 300, y, "Same alert as soon as a teacher's nameplate shows up nearby (needs enemy nameplates on).")
@@ -1616,6 +1678,9 @@ do
     if not p:IsShown() then return end
     mmCheck:SetChecked(not ns.db.minimap.hide)
     ShowRouteColor()
+    pinSize:SetValue(ns.db.opts.pinSize or 12)
+    pinAlpha:SetValue(ns.db.opts.pinAlpha or 1)
+    ShowPinMode()
     versionText:SetText("BeastTrainingTracker.Kuro  |cffffffff" .. ns.VersionText() .. "|r")
     for i, a in ipairs(Geo.AddonStatus()) do
       local r = addonRows[i]
