@@ -1,0 +1,29 @@
+## Interface: 16001
+## Title: Beast Training Tracker (Kuro)
+## Notes: Tracks which pet ability ranks you've learned, which beasts teach the rest, and rare / elite pets to collect. Works on its own; Questie, TomTom and RareScanner add extras.|nKuro fork: renamed globals (/bttk), hunter-only switch.
+## Author: Socks (fork maintained by Kuro)
+## Version: v1.5.0-kuro.1
+## SavedVariablesPerCharacter: BeastTrainingTrackerKuroDB
+## SavedVariables: BeastTrainingTrackerKuroBackup, BeastTrainingTrackerKuroSeen
+## OptionalDeps: LibStub, CallbackHandler-1.0, LibDataBroker-1.1, LibDBIcon-1.0, HereBeDragons, QuestieDB, Questie, TomTom, RareScanner
+## X-Upstream: https://www.curseforge.com/wow/addons/beast-training-tracker (Curse project 1804189)
+## IconTexture: Interface\Icons\Ability_Hunter_BeastTraining
+
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+Libs\LibDBIcon-1.0\LibDBIcon-1.0.lua
+Libs\HereBeDragons\HereBeDragons-2.0.lua
+Libs\HereBeDragons\HereBeDragons-Pins-2.0.lua
+
+Data.lua
+RarePets.lua
+RareIds.lua
+RespawnData.lua
+Core.lua
+Geo.lua
+Rares.lua
+Alerts.lua
+UI.lua
+Tracker.lua
+PetXP.lua
