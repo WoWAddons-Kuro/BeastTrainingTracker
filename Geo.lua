@@ -1043,11 +1043,9 @@ local queued
 function Geo.QueuePins(force)
   if not ns.db then return end
   if not ns.Active() then
-    -- hunter-only mode on another class: nothing on the map
-    if lastSig ~= "inactive" then
-      lastSig = "inactive"
-      if Libs() then ClearPins() end
-    end
+    -- hunter-only mode on another class: nothing on the map, ever
+    lastSig = nil
+    ClearPins()
     return
   end
   local o = ns.db.opts
@@ -1063,6 +1061,16 @@ end
 
 -- after learning a rank or taming a pet, drop route stops you no longer need
 local lastPruneSig
+
+-- Hunter-only mode switched on (or login on another class): take every
+-- pin, waypoint and route line off the map.
+ns.OnDeactivate(function()
+  lastSig = nil
+  ClearPins()
+  if #Geo.route > 0 then Geo.ClearWaypoints(true) end
+  ClearDots()
+end)
+
 ns.OnRefresh(function()
   Geo.QueuePins()
   local sig = (ns.learnedSerial or 0) .. ":" .. (ns.tamedSerial or 0)

@@ -435,6 +435,15 @@ for i, name in ipairs(TAB_NAMES) do
 end
 Divider(f, -119)
 
+-- "Only run on Hunters": sits in the header where the progress bar is,
+-- shown only while the addon is inactive on this (non-hunter) character.
+local hunterCheck = Check(f, "Only run on Hunters", "hunterOnly", 0, 0,
+  "On other classes the addon does nothing - no scans, alerts, map pins, tracker, XP bar or tooltips. Only this window and the minimap button stay.",
+  function() if ns.ApplyActive then ns.ApplyActive() end end)
+hunterCheck:ClearAllPoints()
+hunterCheck:SetPoint("TOPLEFT", bar, "TOPLEFT", -4, 4)
+hunterCheck:Hide()
+
 local function CurrentTab() return (ns.db and ns.db.tab) or 1 end
 
 -- Hunter-only mode on another class: only the Settings tab is usable
@@ -453,9 +462,9 @@ local function RefreshAll()
   end
   if not active then
     petText:SetText("|cffff6060Disabled on this character|r")
-    zoneText:SetText("|cff9d9d9dNot a Hunter. Untick \"Only run on Hunters\" below to use the addon here.|r")
-    bar:SetValue(0)
-    barText:SetText("")
+    zoneText:SetText("|cff9d9d9dNot a Hunter|r")
+    bar:Hide()
+    hunterCheck:Show()
     addonStrip.text:SetText("")
     clearRoute:SetEnabled(false)
     syncText:SetText("")
@@ -463,6 +472,8 @@ local function RefreshAll()
     if p and p.Refresh then p.Refresh() end
     return
   end
+  bar:Show()
+  hunterCheck:Hide()
 
   local fam, zone = ns.PetFamily(), ns.CurrentZone()
   if fam then
@@ -1589,12 +1600,6 @@ do
   mmCheck:SetScript("OnClick", function() if ns.ToggleMinimapButton then ns.ToggleMinimapButton() end end)
   local clear = Button(p, "Clear waypoints", 160, function() Geo.ClearWaypoints() end)
   clear:SetPoint("TOPRIGHT", -8, y)
-  y = y - 24
-
-  Check(p, "Only run on Hunters", "hunterOnly", 4, y,
-    "On other classes the addon does nothing - no scans, alerts, map pins, tracker, XP bar or tooltips. "
-    .. "Only this window (Settings tab) and the minimap button stay, so you can turn it back on.",
-    function() if ns.ApplyActive then ns.ApplyActive() end end)
 
   -- installed version, bottom right
   local versionText = p:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
