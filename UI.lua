@@ -182,6 +182,7 @@ local function Check(parent, label, key, x, y, tip, onChange)
     fs = cb:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     fs:SetPoint("LEFT", cb, "RIGHT", 2, 0)
   end
+  cb.text = fs
   fs:SetFontObject("GameFontHighlightSmall")
   fs:SetText(label)
   cb:SetScript("OnClick", function(self)
@@ -435,14 +436,21 @@ for i, name in ipairs(TAB_NAMES) do
 end
 Divider(f, -119)
 
--- "Only run on Hunters": sits in the header where the progress bar is,
--- shown only while the addon is inactive on this (non-hunter) character.
+-- Keep the class restriction accessible in the upper-right title bar.
+-- Its visibility is independent of the addon being active or inactive.
+
+
 local hunterCheck = Check(f, "Only run on Hunters", "hunterOnly", 0, 0,
   "On other classes the addon does nothing - no scans, alerts, map pins, tracker, XP bar or tooltips. Only this window and the minimap button stay.",
   function() if ns.ApplyActive then ns.ApplyActive() end end)
 hunterCheck:ClearAllPoints()
-hunterCheck:SetPoint("TOPLEFT", bar, "TOPLEFT", -4, 4)
-hunterCheck:Hide()
+hunterCheck:SetPoint("TOPRIGHT", f, "TOPRIGHT", -38, -2)
+local hunterCheckLabel = hunterCheck.text or hunterCheck.Text
+if hunterCheckLabel then
+  hunterCheckLabel:ClearAllPoints()
+  hunterCheckLabel:SetPoint("RIGHT", hunterCheck, "LEFT", -2, 0)
+end
+hunterCheck:Show()
 
 local function CurrentTab() return (ns.db and ns.db.tab) or 1 end
 
@@ -464,7 +472,6 @@ local function RefreshAll()
     petText:SetText("|cffff6060Disabled on this character|r")
     zoneText:SetText("|cff9d9d9dNot a Hunter|r")
     bar:Hide()
-    hunterCheck:Show()
     addonStrip.text:SetText("")
     clearRoute:SetEnabled(false)
     syncText:SetText("")
@@ -473,7 +480,6 @@ local function RefreshAll()
     return
   end
   bar:Show()
-  hunterCheck:Hide()
 
   local fam, zone = ns.PetFamily(), ns.CurrentZone()
   if fam then
