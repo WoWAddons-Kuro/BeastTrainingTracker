@@ -32,6 +32,34 @@ end
 local lastAlert = {}
 local THROTTLE = 90
 
+-- Sounds you can pick for the alert (sound kit ids, stable since Legion)
+ns.ALERT_SOUNDS = {
+  { id = 8959,  name = "Raid warning" },
+  { id = 8960,  name = "Ready check" },
+  { id = 12889, name = "Alarm clock" },
+  { id = 37666, name = "Raid boss whisper" },
+  { id = 18019, name = "Battle.net toast" },
+  { id = 31578, name = "Epic loot toast" },
+  { id = 888,   name = "Level up" },
+  { id = 878,   name = "Quest complete" },
+  { id = 3175,  name = "Map ping" },
+  { id = 3081,  name = "Whisper received" },
+  { id = 5274,  name = "Auction house open" },
+  { id = 8458,  name = "PvP queue" },
+}
+
+-- The configured alert sound: a custom file / FileDataID if set, else the sound kit
+function ns.PlayAlertSound()
+  local o = ns.db and ns.db.opts
+  if not o then return end
+  local custom = o.alertSoundCustom
+  if type(custom) == "string" and custom ~= "" then
+    local ok = pcall(PlaySoundFile, tonumber(custom) or custom, "Master")
+    if ok then return end
+  end
+  pcall(PlaySound, o.alertSoundId or 8959, "Master")
+end
+
 local function Alert(unit, how)
   local o = ns.db and ns.db.opts
   if not o then return end
@@ -58,9 +86,7 @@ local function Alert(unit, how)
     pcall(RaidNotice_AddMessage, RaidWarningFrame, msg, ChatTypeInfo and ChatTypeInfo["RAID_WARNING"] or { r = 1, g = 1, b = 1 })
   end
   ns.Say(msg)
-  if o.alertSound then
-    pcall(PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master")
-  end
+  if o.alertSound then ns.PlayAlertSound() end
 end
 
 ------------------------------------------------------------------------

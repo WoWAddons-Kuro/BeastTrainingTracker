@@ -739,6 +739,9 @@ local DEFAULTS = {
   rareHideTamed = false, rareHideHigh = false, rarePins = true, rareSortSpeed = false,
   spShowRare = true, spShowElite = true, spShowSpawned = true, spShowDungeon = false,
   alertTarget = true, alertNameplate = true, alertSound = true, rsHandlesRares = true,
+  -- alertSoundId: a sound kit id (8959 = raid warning); alertSoundCustom: a file path or
+  -- FileDataID that overrides it when not empty
+  alertSoundId = 8959, alertSoundCustom = "",
   tracker = true, trackerAutoHide = false,
   petXpBar = true, petXpHeight = 7, petXpAutoWidth = true, petXpWidth = 160, petXpTextAlways = false, petXpLock = false,
   petXpShowName = true, petXpShowLevel = true, petXpShowXP = true, petXpShowPct = true,

@@ -78,6 +78,12 @@ Settings → Map pins controls how busy the maps get:
   grow to this multiple (up to 3x, default 2x) fully zoomed in. *Off* keeps them
   one size.
 
+## Alerts
+
+Settings → Alerts → **Alert sound...** opens a picker: a list of game sounds,
+each with *Play* and *Use*, plus a box for a custom sound - a file path such as
+`Interface\AddOns\MyAddon\ding.ogg` or a FileDataID. Default is the raid warning.
+
 ## Tabs
 
 | Tab | What it shows |

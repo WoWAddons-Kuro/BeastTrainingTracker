@@ -1644,6 +1644,8 @@ do
   Section("Alerts")
   Check(p, "Alert when I target or mouse over a teacher", "alertTarget", 4, y, "Big on-screen message when a beast you can tame teaches something you need.")
   Check(p, "Alert when a teacher's nameplate appears", "alertNameplate", 300, y, "Same alert as soon as a teacher's nameplate shows up nearby (needs enemy nameplates on).")
+  local soundBtn = Button(p, "Alert sound...", 120, function() if ns.ToggleAlertSoundOptions then ns.ToggleAlertSoundOptions() end end)
+  soundBtn:SetPoint("TOPRIGHT", -8, y)
   y = y - 24
   Check(p, "Play a sound with alerts", "alertSound", 4, y, "Raid-warning sound when an alert fires.")
   Check(p, "Remind me about pet upgrades", "upgradeAlert", 300, y, "Chat reminder when you know a better rank than your pet has.")
@@ -1831,6 +1833,111 @@ do
       :format(explicit))
   end
   p:SetScript("OnShow", p.Refresh)
+end
+
+------------------------------------------------------------------------
+-- Alert sound picker: a list of game sounds (Play / Use) plus a custom
+-- file path or FileDataID. Opened from Settings → Alerts → "Alert sound...".
+------------------------------------------------------------------------
+do
+  local win
+  local ROW_H = 22
+
+  local function Build()
+    local list = ns.ALERT_SOUNDS or {}
+    win = CreateFrame("Frame", "BeastTrainingTrackerKuroAlertSound", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+    win:SetSize(340, 120 + #list * ROW_H)
+    win:SetPoint("CENTER")
+    win:SetFrameStrata("DIALOG")
+    win:SetMovable(true)
+    win:EnableMouse(true)
+    win:SetClampedToScreen(true)
+    win:RegisterForDrag("LeftButton")
+    win:SetScript("OnDragStart", win.StartMoving)
+    win:SetScript("OnDragStop", win.StopMovingOrSizing)
+    if win.SetBackdrop then
+      win:SetBackdrop({
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border", edgeSize = 24,
+        insets = { left = 6, right = 6, top = 6, bottom = 6 },
+      })
+    end
+    tinsert(UISpecialFrames, win:GetName()) -- Escape closes it
+
+    local title = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    title:SetPoint("TOP", 0, -14)
+    title:SetText("Alert sound")
+    local close = CreateFrame("Button", nil, win, "UIPanelCloseButton")
+    close:SetPoint("TOPRIGHT", -4, -4)
+
+    local rows = {}
+    local function Mark()
+      local o = ns.db.opts
+      local custom = o.alertSoundCustom ~= nil and o.alertSoundCustom ~= ""
+      for _, r in ipairs(rows) do
+        local on = not custom and o.alertSoundId == r.id
+        r.name:SetText((on and "|cff40ff40" or "|cffffffff") .. r.text .. "|r")
+        r.use:SetEnabled(not on)
+      end
+    end
+
+    for i, s in ipairs(list) do
+      local y = -40 - (i - 1) * ROW_H
+      local r = { id = s.id, text = s.name }
+      r.name = win:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+      r.name:SetPoint("TOPLEFT", 20, y - 5)
+      r.play = Button(win, "Play", 50, function() pcall(PlaySound, s.id, "Master") end)
+      r.play:SetPoint("TOPRIGHT", -80, y)
+      r.use = Button(win, "Use", 50, function()
+        ns.db.opts.alertSoundId = s.id
+        ns.db.opts.alertSoundCustom = ""
+        if win.customBox then win.customBox:SetText("") end
+        Mark()
+      end)
+      r.use:SetPoint("TOPRIGHT", -24, y)
+      rows[i] = r
+    end
+
+    -- custom sound: a file path inside Interface\ or a FileDataID
+    local cy = -40 - #list * ROW_H - 8
+    local customLabel = win:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    customLabel:SetPoint("TOPLEFT", 20, cy)
+    customLabel:SetText("Custom: file path or FileDataID")
+    local box = CreateFrame("EditBox", nil, win, "InputBoxTemplate")
+    box:SetSize(190, 20)
+    box:SetPoint("TOPLEFT", 26, cy - 16)
+    box:SetAutoFocus(false)
+    box:SetScript("OnEscapePressed", box.ClearFocus)
+    box:SetScript("OnEnterPressed", function(self)
+      ns.db.opts.alertSoundCustom = (self:GetText() or ""):match("^%s*(.-)%s*$")
+      self:ClearFocus()
+      Mark()
+    end)
+    win.customBox = box
+    local cPlay = Button(win, "Play", 50, function()
+      local v = (box:GetText() or ""):match("^%s*(.-)%s*$")
+      if v ~= "" then pcall(PlaySoundFile, tonumber(v) or v, "Master") end
+    end)
+    cPlay:SetPoint("LEFT", box, "RIGHT", 8, 0)
+    local cUse = Button(win, "Use", 50, function() box:GetScript("OnEnterPressed")(box) end)
+    cUse:SetPoint("LEFT", cPlay, "RIGHT", 4, 0)
+    local hint = win:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    hint:SetPoint("TOPLEFT", 20, cy - 42)
+    hint:SetWidth(300)
+    hint:SetJustifyH("LEFT")
+    hint:SetText("e.g. Interface\\AddOns\\MyAddon\\ding.ogg  -  leave empty to use the sound picked above.")
+
+    win:SetScript("OnShow", function()
+      box:SetText(ns.db.opts.alertSoundCustom or "")
+      Mark()
+    end)
+  end
+
+  function ns.ToggleAlertSoundOptions()
+    if not ns.db then return end
+    if not win then Build() end
+    if win:IsShown() then win:Hide() else win:Show() end
+  end
 end
 
 ------------------------------------------------------------------------
