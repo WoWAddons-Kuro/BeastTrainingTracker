@@ -732,7 +732,7 @@ local DEFAULTS = {
   -- pin look: size in px, alpha 0.2-1, how many pins per beast on the map
   -- ("all" = every spawn, "nearest" = one per beast, "ability" = one per ability)
   -- pinZoomGrow: world-map pins grow to this multiple at full zoom-in (1 = fixed size)
-  pinSize = 8, pinAlpha = 1, pinMode = "ability", pinZoomGrow = 2,
+  pinSize = 4, pinAlpha = 1, pinMode = "ability", pinZoomGrow = 2,
   -- rare pets
   rareHideTamed = false, rareHideHigh = false, rarePins = true, rareSortSpeed = false,
   spShowRare = true, spShowElite = true, spShowSpawned = true, spShowDungeon = false,

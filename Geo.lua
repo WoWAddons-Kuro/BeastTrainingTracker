@@ -1105,7 +1105,7 @@ function Geo.UpdatePins()
   if o.pinsOff or not (o.mapPins or o.minimapPins) then return end
 
   local pm, px, py = PlayerPos()
-  local size, alpha = o.pinSize or 12, o.pinAlpha or 1
+  local size, alpha = o.pinSize or 4, o.pinAlpha or 1
   local chosen = ChoosePins(TeachersToPin(), o.pinMode or "nearest", pm, px, py)
 
   if o.mapPins then

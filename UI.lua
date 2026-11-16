@@ -1689,7 +1689,7 @@ do
     if not p:IsShown() then return end
     mmCheck:SetChecked(not ns.db.minimap.hide)
     ShowRouteColor()
-    pinSize:SetValue(ns.db.opts.pinSize or 12)
+    pinSize:SetValue(ns.db.opts.pinSize or 4)
     pinAlpha:SetValue(ns.db.opts.pinAlpha or 1)
     pinZoom:SetValue(ns.db.opts.pinZoomGrow or 1)
     ShowPinMode()

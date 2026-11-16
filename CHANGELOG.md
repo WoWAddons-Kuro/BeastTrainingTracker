@@ -8,7 +8,7 @@ next to the original without collisions.
 
 ### Added
 - **Only run on Hunters** (Settings, default on). On any other class the addon does nothing - no scans, alerts, map pins, zone tracker, pet XP bar or tooltip lines. Only the main window (locked to the Settings tab) and the minimap button stay, so the option can be turned back off. `/bttk` on a non-hunter prints a hint instead of running commands.
-- **Map pin controls** (Settings → Map pins): *Pin size* (4–24 px, default 8), *Pin opacity* (20–100 %), *Zoom growth* (world-map pins grow up to 3x as you zoom in; default 2x), and *Pins* - **One per ability** (default; one pin per missing ability, the closest beast that teaches it), **Nearest spawn only** (one pin per beast), or **All spawns** (the old behaviour). The minimap follows the same choice. The route-line opacity slider is now labelled *Route opacity*.
+- **Map pin controls** (Settings → Map pins): *Pin size* (4–24 px, default 4), *Pin opacity* (20–100 %), *Zoom growth* (world-map pins grow up to 3x as you zoom in; default 2x), and *Pins* - **One per ability** (default; one pin per missing ability, the closest beast that teaches it), **Nearest spawn only** (one pin per beast), or **All spawns** (the old behaviour). The minimap follows the same choice. The route-line opacity slider is now labelled *Route opacity*.
 - README.
 
 ---

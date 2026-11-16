@@ -67,7 +67,7 @@ routes, tracker and XP bar are taken down immediately.
 
 Settings → Map pins has three controls for how busy the map gets:
 
-- **Pin size** (4–24 px, default 8) and **Pin opacity** (20–100 %).
+- **Pin size** (4–24 px, default 4) and **Pin opacity** (20–100 %).
 - **Zoom growth** - world-map pins are drawn at *Pin size* fully zoomed out and
   grow to this multiple (up to 3x, default 2x) fully zoomed in. *Off* keeps them
   one size.
