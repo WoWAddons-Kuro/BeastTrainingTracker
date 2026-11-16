@@ -67,12 +67,15 @@ routes, tracker and XP bar are taken down immediately.
 
 Settings → Map pins has three controls for how busy the map gets:
 
-- **Pin size** (8–24 px) and **Pin opacity** (20–100 %).
-- **Pins per beast** - *Nearest spawn only* (default: one pin per beast, at the
-  spawn closest to you, or the middle of its range on other maps), *One per
-  ability* (one pin per missing ability, the closest beast that teaches it), or
+- **Pin size** (4–24 px, default 8) and **Pin opacity** (20–100 %).
+- **Zoom growth** - world-map pins are drawn at *Pin size* fully zoomed out and
+  grow to this multiple (up to 3x, default 2x) fully zoomed in. *Off* keeps them
+  one size.
+- **Pins** - *One per ability* (default: one pin per missing ability, the
+  closest beast that teaches it), *Nearest spawn only* (one pin per beast, at
+  the spawn closest to you, or the middle of its range on other maps), or
   *All spawns* (every known spawn point, as the original addon draws them).
-  The minimap shows the same selection, nearest first.
+  The minimap shows the same selection, nearest first, and does not zoom-scale.
 
 ## Tabs
 

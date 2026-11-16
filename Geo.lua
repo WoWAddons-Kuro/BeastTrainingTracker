@@ -587,12 +587,34 @@ function Geo.QueueRouteRedraw()
 end
 
 local hooked
+local worldUsed -- forward: the world-map pins currently placed (set up in the pin section)
+
+-- World-map pins grow with zoom: 1x fully zoomed out, opts.pinZoomGrow x
+-- fully zoomed in. Our icon is a child of HereBeDragons' pin frame, so
+-- SetScale here stacks on the small 1.0-1.2x Blizzard already applies.
+function Geo.ApplyPinZoom()
+  if not worldUsed or not WorldMapFrame or not WorldMapFrame.ScrollContainer then return end
+  local sc = WorldMapFrame.ScrollContainer
+  local grow = (ns.db and ns.db.opts.pinZoomGrow) or 1
+  local scale = 1
+  if grow ~= 1 and sc.GetCanvasScale and sc.GetScaleForMinZoom and sc.GetScaleForMaxZoom then
+    local cur, lo, hi = sc:GetCanvasScale(), sc:GetScaleForMinZoom(), sc:GetScaleForMaxZoom()
+    if cur and lo and hi and hi > lo then
+      local t = math.max(0, math.min(1, (cur - lo) / (hi - lo)))
+      scale = 1 + t * (grow - 1)
+    end
+  end
+  for _, p in ipairs(worldUsed) do p:SetScale(scale) end
+end
+
 local function HookWorldMap()
   if hooked or not WorldMapFrame then return end
   hooked = true
-  WorldMapFrame:HookScript("OnShow", Geo.DrawRoute)
-  if WorldMapFrame.OnMapChanged then hooksecurefunc(WorldMapFrame, "OnMapChanged", Geo.QueueRouteRedraw) end
-  if WorldMapFrame.OnCanvasScaleChanged then hooksecurefunc(WorldMapFrame, "OnCanvasScaleChanged", Geo.QueueRouteRedraw) end
+  WorldMapFrame:HookScript("OnShow", function() Geo.DrawRoute(); Geo.ApplyPinZoom() end)
+  if WorldMapFrame.OnMapChanged then hooksecurefunc(WorldMapFrame, "OnMapChanged", function() Geo.QueueRouteRedraw(); Geo.ApplyPinZoom() end) end
+  if WorldMapFrame.OnCanvasScaleChanged then
+    hooksecurefunc(WorldMapFrame, "OnCanvasScaleChanged", function() Geo.QueueRouteRedraw(); Geo.ApplyPinZoom() end)
+  end
   if WorldMapFrame.ScrollContainer and WorldMapFrame.ScrollContainer.HookScript then
     WorldMapFrame.ScrollContainer:HookScript("OnMouseWheel", Geo.QueueRouteRedraw)
   end
@@ -891,7 +913,8 @@ function Geo.Label(ab, r, t) return ("%s - %s %d"):format(t.name, ab.name, r.ran
 -- Map pins (HereBeDragons, bundled)
 ------------------------------------------------------------------------
 local worldPool, miniPool = {}, {}
-local worldUsed, miniUsed = {}, {}
+worldUsed = {} -- declared above HookWorldMap so Geo.ApplyPinZoom can see it
+local miniUsed = {}
 local MAX_WORLD, MAX_PER_TEACHER, MAX_MINI = 900, 25, 120
 
 local SRC_TEXT = { questie = "Questie", seen = "your sightings", rarescanner = "RareScanner", rare = "rare data" }
@@ -1094,6 +1117,7 @@ function Geo.UpdatePins()
       HBDPins:AddWorldMapIconMap(REF, p, c.s.map, c.s.x, c.s.y, 0)
       worldUsed[#worldUsed + 1] = p
     end
+    Geo.ApplyPinZoom()
   end
 
   -- Minimap: the same chosen pins, those on your map, nearest first
@@ -1133,7 +1157,7 @@ function Geo.QueuePins(force)
   local sig = table.concat({ ns.learnedSerial or 0, ns.PlayerLevel(), ns.CurrentZone(), tostring(o.mapPins),
     tostring(o.minimapPins), tostring(o.huntPetOnly), tostring(o.huntDungeons), tostring(Geo.ready), ns.PetFamily() or "",
     tostring(o.pinsOff), tostring(o.rarePins), tostring(ns.tamedSerial or 0), tostring(ns.seenSerial or 0),
-    tostring(o.pinSize), tostring(o.pinAlpha), tostring(o.pinMode) }, "|")
+    tostring(o.pinSize), tostring(o.pinAlpha), tostring(o.pinMode), tostring(o.pinZoomGrow) }, "|")
   if sig == lastSig and not force then return end
   lastSig = sig
   if queued then return end

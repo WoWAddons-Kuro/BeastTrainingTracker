@@ -1530,8 +1530,8 @@ do
   swatch:SetScript("OnLeave", GameTooltip_Hide)
 
   local alpha = CreateFrame("Slider", "BeastTrainingTrackerKuroRouteAlpha", p, "OptionsSliderTemplate")
-  alpha:SetWidth(160)
-  alpha:SetPoint("LEFT", swatch, "RIGHT", 90, 0)
+  alpha:SetWidth(150)
+  alpha:SetPoint("TOPLEFT", 220, y - 10) -- same column as the pin opacity slider below
   alpha:SetMinMaxValues(0.1, 1)
   alpha:SetValueStep(0.05)
   if alpha.SetObeyStepOnDrag then alpha:SetObeyStepOnDrag(true) end
@@ -1542,7 +1542,7 @@ do
   if high then high:SetText("100%") end
   alpha:SetScript("OnValueChanged", function(self, v)
     v = math.floor(v * 20 + 0.5) / 20
-    if label then label:SetText(("Opacity: %d%%"):format(v * 100)) end
+    if label then label:SetText(("Route opacity: %d%%"):format(v * 100)) end
     if ns.db and ns.db.opts.routeAlpha ~= v then
       ns.db.opts.routeAlpha = v
       ns.Geo.DrawRoute()
@@ -1555,7 +1555,7 @@ do
     alpha:SetValue(d.a)
     SetRouteColor(d.r, d.g, d.b)
   end)
-  resetColor:SetPoint("LEFT", alpha, "RIGHT", 40, 0)
+  resetColor:SetPoint("TOPRIGHT", -8, y - 8)
 
   -- current values, filled in whenever Settings refreshes
   local function ShowRouteColor()
@@ -1588,10 +1588,21 @@ do
     end)
     return s
   end
-  local pinSize = PinSlider("BeastTrainingTrackerKuroPinSize", "Pin size", 8, 24, 1, 20, "pinSize",
+  local pinSize = PinSlider("BeastTrainingTrackerKuroPinSize", "Pin size", 4, 24, 1, 20, "pinSize",
     function(v) return ("%d px"):format(v) end)
   local pinAlpha = PinSlider("BeastTrainingTrackerKuroPinAlpha", "Pin opacity", 0.2, 1, 0.05, 220, "pinAlpha",
     function(v) return ("%d%%"):format(v * 100 + 0.5) end)
+  -- how much world-map pins grow between fully zoomed out and fully zoomed in
+  local pinZoom = PinSlider("BeastTrainingTrackerKuroPinZoomGrow", "Zoom growth", 1, 3, 0.25, 420, "pinZoomGrow",
+    function(v) return v == 1 and "off" or ("%gx"):format(v) end)
+  pinZoom:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:AddLine("Zoom growth", 1, 0.82, 0)
+    GameTooltip:AddLine("World map only. Pins are drawn at Pin size when the map is fully zoomed out and grow to this multiple when fully zoomed in. Off = the same size at every zoom.", 1, 1, 1, true)
+    GameTooltip:Show()
+  end)
+  pinZoom:SetScript("OnLeave", GameTooltip_Hide)
+  pinZoom:HookScript("OnValueChanged", function() if ns.Geo.ApplyPinZoom then ns.Geo.ApplyPinZoom() end end)
 
   -- Pins per beast: click to cycle
   local PIN_MODES = {
@@ -1599,14 +1610,14 @@ do
     { key = "ability", text = "One per ability", tip = "One pin per missing ability: the closest beast that teaches it. The fewest pins." },
     { key = "all", text = "All spawns", tip = "Every known spawn point of every beast you need. Can be a lot of pins." },
   }
-  local pinMode = Button(p, "", 230, nil)
-  pinMode:SetPoint("TOPLEFT", 420, y - 8)
+  local pinMode = Button(p, "", 160, nil)
+  pinMode:SetPoint("TOPRIGHT", -8, y - 8) -- right-aligned, same column as the route "Default" button
   local function PinModeIndex()
     for i, m in ipairs(PIN_MODES) do if m.key == (ns.db and ns.db.opts.pinMode) then return i end end
     return 1
   end
   local function ShowPinMode()
-    pinMode:SetText("Pins per beast: " .. PIN_MODES[PinModeIndex()].text)
+    pinMode:SetText("Pins: " .. PIN_MODES[PinModeIndex()].text)
   end
   pinMode:SetScript("OnClick", function()
     local m = PIN_MODES[PinModeIndex() % #PIN_MODES + 1]
@@ -1680,6 +1691,7 @@ do
     ShowRouteColor()
     pinSize:SetValue(ns.db.opts.pinSize or 12)
     pinAlpha:SetValue(ns.db.opts.pinAlpha or 1)
+    pinZoom:SetValue(ns.db.opts.pinZoomGrow or 1)
     ShowPinMode()
     versionText:SetText("BeastTrainingTracker.Kuro  |cffffffff" .. ns.VersionText() .. "|r")
     for i, a in ipairs(Geo.AddonStatus()) do
