@@ -2,7 +2,7 @@
 ## Title: BeastTrainingTracker.Kuro
 ## Notes: Tracks which pet ability ranks you've learned, which beasts teach the rest, and rare / elite pets to collect. Works on its own; Questie, TomTom and RareScanner add extras.|nKuro fork: renamed globals (/bttk), hunter-only switch.
 ## Author: Socks (fork maintained by Kuro)
-## Version: v2026.11.16.1356
+## Version: v2026.11.16.1419
 ## SavedVariablesPerCharacter: BeastTrainingTrackerKuroDB
 ## SavedVariables: BeastTrainingTrackerKuroBackup, BeastTrainingTrackerKuroSeen
 ## OptionalDeps: LibStub, CallbackHandler-1.0, LibDataBroker-1.1, LibDBIcon-1.0, HereBeDragons, QuestieDB, Questie, TomTom, RareScanner
