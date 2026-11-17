@@ -1861,6 +1861,7 @@ do
         edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border", edgeSize = 24,
         insets = { left = 6, right = 6, top = 6, bottom = 6 },
       })
+      win:SetBackdropColor(0, 0, 0, 1) -- the dialog texture is translucent; make the panel solid
     end
     tinsert(UISpecialFrames, win:GetName()) -- Escape closes it
 
