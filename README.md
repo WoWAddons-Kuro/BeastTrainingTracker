@@ -82,7 +82,7 @@ Settings → Map pins controls how busy the maps get:
 
 Settings → Alerts → **Alert sound...** opens a picker: a list of game sounds,
 each with *Play* and *Use*, plus a box for a custom sound - a file path such as
-`Interface\AddOns\MyAddon\ding.ogg` or a FileDataID. Default is the raid warning.
+`Interface\AddOns\MyAddon\ding.ogg` or a FileDataID. Default is the epic loot toast.
 
 ## Tabs
 

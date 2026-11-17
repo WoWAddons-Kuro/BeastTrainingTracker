@@ -57,7 +57,7 @@ function ns.PlayAlertSound()
     local ok = pcall(PlaySoundFile, tonumber(custom) or custom, "Master")
     if ok then return end
   end
-  pcall(PlaySound, o.alertSoundId or 8959, "Master")
+  pcall(PlaySound, o.alertSoundId or 31578, "Master")
 end
 
 local function Alert(unit, how)

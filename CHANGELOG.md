@@ -9,7 +9,7 @@ next to the original without collisions.
 ### Added
 - **Only run on Hunters** (Settings, default on). On any other class the addon does nothing - no scans, alerts, map pins, zone tracker, pet XP bar or tooltip lines. Only the main window (locked to the Settings tab) and the minimap button stay, so the option can be turned back off. `/bttk` on a non-hunter prints a hint instead of running commands.
 - **Map pin controls** (Settings → Map pins): the "show on world map / minimap" checkboxes are replaced by two selectors, **World map pins** and **Minimap pins**, each **None** / **One per ability** (default; one pin per missing ability, the closest beast that teaches it) / **Nearest spawn only** (one pin per beast) / **All spawns** (the old behaviour). Plus *Pin size* (4–24 px, default 4), *Pin opacity* (20–100 %) and *Zoom growth* (world-map pins grow up to 3x as you zoom in; default 2x). The route-line opacity slider is now labelled *Route opacity*. Old settings are migrated.
-- **Alert sound picker** (Settings → Alerts → *Alert sound...*): choose from a dozen game sounds (Play / Use), or type a custom file path or FileDataID. Default is unchanged (raid warning).
+- **Alert sound picker** (Settings → Alerts → *Alert sound...*): choose from a dozen game sounds (Play / Use), or type a custom file path or FileDataID. Default is the epic loot toast.
 - README.
 
 ---
