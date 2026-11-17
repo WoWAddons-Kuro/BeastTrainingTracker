@@ -63,6 +63,8 @@ end
 local function Alert(unit, how)
   local o = ns.db and ns.db.opts
   if not o then return end
+  -- nothing to tame with yet: no message, no sound
+  if ns.HasTameBeast and not ns.HasTameBeast() then return end
   if how == "nameplate" and not o.alertNameplate then return end
   if how ~= "nameplate" and not o.alertTarget then return end
   local list, name = NeededFromUnit(unit)

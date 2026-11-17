@@ -146,6 +146,15 @@ end
 -- Hunters can tame beasts up to their own level
 function ns.CanTame(t) return t.minLevel <= ns.PlayerLevel() end
 
+-- Has the player learned Tame Beast (spell 1515) yet? A level-1 hunter
+-- can't tame anything, so "tame it!" alerts are noise until then.
+local TAME_BEAST_SPELL = 1515
+function ns.HasTameBeast()
+  if IsPlayerSpell then return IsPlayerSpell(TAME_BEAST_SPELL) end
+  if IsSpellKnown then return IsSpellKnown(TAME_BEAST_SPELL) end
+  return true -- no API to ask: don't suppress
+end
+
 -- Record a learned rank. Returns true if it was new. Never removes anything.
 -- quiet = a resync of ranks you already had (Beast Training window, backup
 -- import), not something you just learned, so no popup.
