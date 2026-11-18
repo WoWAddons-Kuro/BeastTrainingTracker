@@ -598,8 +598,13 @@ function Geo.ApplyPinZoom()
   local grow = (ns.db and ns.db.opts.pinZoomGrow) or 1
   local scale = 1
   if grow ~= 1 and sc.GetCanvasScale and sc.GetScaleForMinZoom and sc.GetScaleForMaxZoom then
-    local cur, lo, hi = sc:GetCanvasScale(), sc:GetScaleForMinZoom(), sc:GetScaleForMaxZoom()
-    if cur and lo and hi and hi > lo then
+    -- Blizzard fills in sc.zoomLevels only once the map has been opened and
+    -- laid out; before that GetScaleForMinZoom() errors out. pcall it, and
+    -- leave pins at 1x if the map hasn't been shown yet.
+    local okC, cur = pcall(sc.GetCanvasScale, sc)
+    local okL, lo = pcall(sc.GetScaleForMinZoom, sc)
+    local okH, hi = pcall(sc.GetScaleForMaxZoom, sc)
+    if okC and okL and okH and type(cur) == "number" and type(lo) == "number" and type(hi) == "number" and hi > lo then
       local t = math.max(0, math.min(1, (cur - lo) / (hi - lo)))
       scale = 1 + t * (grow - 1)
     end
